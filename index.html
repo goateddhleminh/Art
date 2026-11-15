@@ -1947,6 +1947,25 @@
       margin-top: 0;
     }
 
+    .lb-actions .lb-link {
+      background: #0A0A0C !important;
+      color: #FFFFFF !important;
+      border: 1px solid rgba(10, 10, 12, 0.9) !important;
+      font-weight: 800;
+      padding: .85rem 1.85rem;
+      box-shadow: 0 10px 24px -6px rgba(10, 10, 12, 0.45);
+      cursor: pointer;
+      pointer-events: auto;
+      text-decoration: none;
+    }
+
+    .lb-actions .lb-link:hover {
+      background: #1E293B !important;
+      color: #FFFFFF !important;
+      transform: translateY(-2px);
+      box-shadow: 0 16px 32px -6px rgba(10, 10, 12, 0.6);
+    }
+
     .icon-btn {
       display: inline-grid;
       place-items: center;
@@ -2288,7 +2307,7 @@
       },
 
       about:
-        "[Short bio] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        "Computer Science Undergraduate at VNUHCM-US | Freelance Software Engineer",
 
       // Interactive Tools: click any tool on the site to inspect its details!
       tools: [
@@ -2307,10 +2326,10 @@
           url: "#"
         },
         {
-          name: "Upcoming",
-          abbr: "+",
-          level: "In Progress · Continuous Learning",
-          desc: "Currently learning and expanding my skill set. More tools, frameworks, and certifications will be added here soon.",
+          name: "IELTS 7.5",
+          abbr: "EN",
+          level: "C1 Advanced · CEFR Equivalent",
+          desc: "Demonstrated professional English language proficiency with an Overall Band Score of 7.5 (CEFR C1 Advanced). Skilled in high-level technical communication, academic writing, engineering documentation, and international teamwork.",
           url: "#"
         },
         {
@@ -2339,8 +2358,13 @@
       projects: {
         personal: [
           {
-            title: "[Project Title 01]", category: "[Category]", year: "[Year]", colors: ["#4EA865", "#C7EA6B"], image: "", link: "",
-            description: "[Project description] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus."
+            title: "Virtue",
+            category: "Tracker/Planner",
+            year: "2026",
+            colors: ["#2563EB", "#06B6D4"],
+            image: "",
+            link: "https://virtue-seven.vercel.app/",
+            description: "A modern, self-contained single-file study tracking and gamified productivity web application. Featuring deep-work focus timers, a comprehensive planner, document & link resources, a dual-section academic and life journal, reward vault, minigames, and cloud synchronization."
           },
           {
             title: "[Project Title 02]", category: "[Category]", year: "[Year]", colors: ["#C9382D", "#F4B63F"], image: "", link: "",
@@ -3020,8 +3044,23 @@
         $('.lb-title', lb).textContent = p.title;
         $('.lb-meta', lb).textContent = [p.category, p.year].filter(Boolean).join(' · ');
         $('.lb-desc', lb).textContent = p.description || '';
-        lbLink.hidden = !p.link;
-        if (p.link) lbLink.href = p.link;
+        if (p.link) {
+          lbLink.href = p.link;
+          lbLink.style.display = 'inline-flex';
+          lbLink.removeAttribute('hidden');
+          lbPoster.style.cursor = 'pointer';
+          lbPoster.title = 'Click to open project link';
+          lbPoster.onclick = (e) => {
+            e.stopPropagation();
+            window.open(p.link, '_blank', 'noopener,noreferrer');
+          };
+        } else {
+          lbLink.style.display = 'none';
+          lbLink.setAttribute('hidden', '');
+          lbPoster.style.cursor = 'default';
+          lbPoster.title = '';
+          lbPoster.onclick = null;
+        }
       }
 
       function flipDelta(fromEl) {
