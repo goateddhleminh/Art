@@ -1128,6 +1128,45 @@
       text-align: left;
     }
 
+    .poster--image {
+      background: #0A0A0C;
+    }
+
+    .poster__img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      transition: transform .5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card:hover .poster__img {
+      transform: scale(1.06);
+    }
+
+    .poster__scrim {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(
+        180deg,
+        rgba(10, 10, 12, 0.65) 0%,
+        rgba(10, 10, 12, 0.08) 28%,
+        rgba(10, 10, 12, 0.15) 50%,
+        rgba(10, 10, 12, 0.88) 100%
+      );
+      pointer-events: none;
+    }
+
+    .poster--image .poster__top,
+    .poster--image .poster__title,
+    .poster--image .poster__foot {
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.85);
+      color: #FFFFFF !important;
+    }
+
     .poster__top {
       position: relative;
       z-index: 2;
@@ -2362,7 +2401,7 @@
             category: "Tracker/Planner",
             year: "2026",
             colors: ["#2563EB", "#06B6D4"],
-            image: "",
+            image: "assets/virtue.png",
             link: "https://virtue-seven.vercel.app/",
             description: "A modern, self-contained single-file study tracking and gamified productivity web application. Featuring deep-work focus timers, a comprehensive planner, document & link resources, a dual-section academic and life journal, reward vault, minigames, and cloud synchronization."
           },
@@ -2371,8 +2410,8 @@
             category: "ARPG Game",
             year: "2026",
             colors: ["#18181B", "#EA580C"],
-            image: "",
-            link: "https://goateddhleminh.github.io/Ashen-Veil/",
+            image: "assets/ashen-veil.png",
+            link: "https://ashenveil.vercel.app/",
             description: "A single-player desktop browser ARPG with three classes, a three-region campaign and repeatable expeditions. Characters, scenery and effects are procedural Three.js meshes; sound effects use WebAudio synthesis. No account, multiplayer service, build step or package installation is required to play."
           },
           {
@@ -2632,7 +2671,16 @@
 
       // Poster art
       function posterMarkup(p, i, group) {
-        if (p.image) return `<img src="${esc(p.image)}" alt="${esc(p.title)} — ${esc(p.category)}" loading="lazy" decoding="async">`;
+        if (p.image) {
+          return `
+        <span class="poster poster--image" style="--ink:#FFFFFF" aria-hidden="true">
+          <img class="poster__img" src="${esc(p.image)}" alt="${esc(p.title)} — ${esc(p.category)}" loading="lazy" decoding="async">
+          <span class="poster__scrim"></span>
+          <span class="poster__top"><span>No.${pad(i + 1)}</span><span>${esc(p.category)}</span></span>
+          <span class="poster__title">${esc(p.title)}</span>
+          <span class="poster__foot"><span>${esc(CONFIG.name)}</span><span>${esc(p.year)}</span></span>
+        </span>`;
+        }
         const [c1, c2] = p.colors || ['#3B6FD8', '#0B2A5B'];
         const ink = (luminance(c1) + luminance(c2)) / 2 > 0.4 ? '#0A0A0C' : '#FFFFFF';
         return `
