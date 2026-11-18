@@ -78,7 +78,7 @@
 
       /* --- Aurora Layer Dynamics --- */
       --blob-opacity: 0.55;
-      --blob-blur: 78px;
+      --blob-blur: 24px;
       --grain-opacity: 0.032;
       --cursor-glow: rgba(147, 197, 253, 0.35);
       --streak-color: rgba(255, 255, 255, 0.75);
@@ -148,6 +148,7 @@
     html {
       background: var(--bg-base);
       -webkit-text-size-adjust: 100%;
+      scroll-behavior: auto !important;
     }
 
     body {
@@ -223,6 +224,8 @@
       filter: blur(var(--blob-blur));
       will-change: transform, opacity;
       transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      contain: layout style paint;
       background: radial-gradient(circle at 50% 50%,
           var(--c) 0%,
           color-mix(in oklab, var(--c) 68%, transparent) 36%,
@@ -462,13 +465,16 @@
       padding: clamp(4rem, 8vh, 5.5rem) clamp(1.5rem, 4.5vw, 4rem) clamp(3rem, 6vh, 4.5rem);
       border-radius: var(--radius-slide);
       background: var(--slide-bg);
-      -webkit-backdrop-filter: blur(34px) saturate(200%);
-      backdrop-filter: blur(34px) saturate(200%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      backdrop-filter: blur(16px) saturate(160%);
       box-shadow: var(--slide-shadow);
       overflow: hidden;
       overflow: clip;
       isolation: isolate;
       will-change: transform, opacity;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      contain: layout style paint;
     }
 
     .slide-frame::before {
@@ -846,8 +852,8 @@
       background: rgba(255, 255, 255, 0.88);
       border: 1px solid rgba(255, 255, 255, 1);
       box-shadow: 0 24px 48px -14px rgba(15, 23, 42, 0.14), inset 0 1px 1.5px rgba(255, 255, 255, 1);
-      -webkit-backdrop-filter: blur(24px);
-      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
     }
 
     .tool-detail__close {
@@ -1045,6 +1051,8 @@
       position: relative;
       transform-style: preserve-3d;
       will-change: transform;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
     }
 
     .card-shadow {
@@ -1364,16 +1372,19 @@
       background: rgba(255, 255, 255, 0.72);
       border: 1px solid rgba(255, 255, 255, 0.95);
       box-shadow: 0 16px 36px -12px rgba(15, 23, 42, 0.12), inset 0 1px 1px rgba(255, 255, 255, 1);
-      -webkit-backdrop-filter: blur(20px);
-      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
       text-decoration: none;
       color: var(--text);
-      transition: transform .4s var(--ease-out), box-shadow .4s var(--ease-out), border-color .3s;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      will-change: transform;
+      transition: transform .35s var(--ease-out), box-shadow .35s var(--ease-out), border-color .3s;
       -webkit-tap-highlight-color: transparent;
     }
 
     .social-card:hover {
-      transform: translateY(-8px);
+      transform: translate3d(0, -8px, 0);
       border-color: rgba(10, 10, 12, 0.35);
       box-shadow: 0 28px 56px -14px rgba(15, 23, 42, 0.20), inset 0 1px 1px rgba(255, 255, 255, 1);
     }
@@ -1702,9 +1713,12 @@
       background: rgba(255, 255, 255, 0.72);
       color: var(--text);
       border: 1px solid rgba(255, 255, 255, 0.95);
-      -webkit-backdrop-filter: blur(24px) saturate(190%);
-      backdrop-filter: blur(24px) saturate(190%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      backdrop-filter: blur(16px) saturate(180%);
       box-shadow: 0 20px 50px -15px rgba(15, 23, 42, 0.14), inset 0 1px 1.5px rgba(255, 255, 255, 1);
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      will-change: transform;
     }
 
     .dock ul {
@@ -2483,7 +2497,7 @@
       speedMultiplier: 1,
       scrollShift: true,
       cursorGlow: true,
-      cursorSmoothing: 0.65,
+      cursorSmoothing: 0.25,
       blobs: [
         { x: 18, y: 14, scale: 1.15, rotate: 18, duration: 25 },
         { x: -16, y: 18, scale: 1.20, rotate: -22, duration: 32 },
@@ -2814,14 +2828,16 @@
       window.addEventListener('resize', () => moveIndicator($(`[data-nav="${activeId}"]`), true));
 
       const progress = $('.progress');
-      let ticking = false;
-      function updateProgress() {
-        const max = document.documentElement.scrollHeight - window.innerHeight;
-        progress.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
-        ticking = false;
+      if (!MOTION || typeof window.Lenis === 'undefined') {
+        let ticking = false;
+        const updateProgress = () => {
+          const max = document.documentElement.scrollHeight - window.innerHeight;
+          if (progress) progress.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
+          ticking = false;
+        };
+        window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(updateProgress); } }, { passive: true });
+        updateProgress();
       }
-      window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(updateProgress); } }, { passive: true });
-      updateProgress();
 
       /* ==============================================================
          SMOOTH SCROLL (Lenis) + anchor links
@@ -2830,10 +2846,20 @@
       if (MOTION) {
         gsap.registerPlugin(ScrollTrigger);
         if (typeof window.Lenis !== 'undefined') {
-          lenis = new Lenis({ lerp: 0.085, smoothWheel: true });
-          lenis.on('scroll', ScrollTrigger.update);
+          lenis = new Lenis({
+            duration: 0.95,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            smoothWheel: true,
+            wheelMultiplier: 1.0,
+            touchMultiplier: 1.25,
+            infinite: false
+          });
+          lenis.on('scroll', (e) => {
+            ScrollTrigger.update();
+            if (progress) progress.style.transform = `scaleX(${e.progress})`;
+          });
           gsap.ticker.add((time) => lenis.raf(time * 1000));
-          gsap.ticker.lagSmoothing(0);
+          gsap.ticker.lagSmoothing(500, 33);
         }
       }
 
@@ -2845,7 +2871,7 @@
         const target = document.querySelector(id);
         if (!target) return;
         e.preventDefault();
-        if (lenis) lenis.scrollTo(target, { duration: 1.5, easing: (t) => 1 - Math.pow(1 - t, 4) });
+        if (lenis) lenis.scrollTo(target, { duration: 1.1, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
         else target.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth' });
         if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
         target.focus({ preventScroll: true });
@@ -2885,17 +2911,17 @@
         // Slide-to-slide transitions
         $$('.slide:not(.slide--hero) .slide-frame').forEach((frame) => {
           gsap.fromTo(frame,
-            { scale: 0.92, opacity: 0.35, transformOrigin: '50% 0%' },
+            { scale: 0.97, opacity: 0.65, transformOrigin: '50% 0%' },
             {
               scale: 1, opacity: 1, ease: 'none',
-              scrollTrigger: { trigger: frame.parentElement, start: 'top bottom', end: 'top 30%', scrub: 0.6 }
+              scrollTrigger: { trigger: frame.parentElement, start: 'top bottom', end: 'top 35%', scrub: 0.15 }
             });
         });
         gsap.matchMedia().add('(min-width: 768px)', () => {
           $$('.slide .slide-inner').forEach((inner) => {
             gsap.to(inner, {
-              scale: 0.96, opacity: 0.45, y: -40, ease: 'none',
-              scrollTrigger: { trigger: inner.closest('.slide'), start: 'bottom 65%', end: 'bottom top', scrub: 0.6 },
+              y: -24, opacity: 0.88, ease: 'none',
+              scrollTrigger: { trigger: inner.closest('.slide'), start: 'bottom 70%', end: 'bottom top', scrub: 0.15 },
             });
           });
         });
@@ -2903,28 +2929,28 @@
         // Scroll-triggered reveals
         $$('.split').forEach((h) => {
           gsap.from($$('.c', h), {
-            yPercent: 115, duration: 1.1, ease: 'expo.out', stagger: 0.028,
-            scrollTrigger: { trigger: h, start: 'top 85%', once: true },
+            yPercent: 115, duration: 0.75, ease: 'expo.out', stagger: 0.02,
+            scrollTrigger: { trigger: h, start: 'top 88%', once: true },
           });
         });
         $$('[data-reveal]').forEach((el) => {
           gsap.from(el, {
-            opacity: 0, y: 40, duration: 1.1, ease: 'expo.out',
-            scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+            opacity: 0, y: 28, duration: 0.75, ease: 'expo.out',
+            scrollTrigger: { trigger: el, start: 'top 90%', once: true },
           });
         });
         $$('[data-stagger]').forEach((group) => {
           const isCards = group.classList.contains('card-row') || group.classList.contains('social-row');
           gsap.from(group.children, {
-            opacity: 0, y: isCards ? 90 : 30, scale: isCards ? 0.94 : 1,
-            duration: isCards ? 1.2 : 0.9, ease: 'expo.out', stagger: isCards ? 0.09 : 0.06,
-            scrollTrigger: { trigger: group, start: 'top 85%', once: true },
+            opacity: 0, y: isCards ? 35 : 20, scale: isCards ? 0.97 : 1,
+            duration: isCards ? 0.75 : 0.6, ease: 'expo.out', stagger: isCards ? 0.04 : 0.03,
+            scrollTrigger: { trigger: group, start: 'top 88%', once: true },
           });
         });
         $$('.slide:not(.slide--hero) .slide-head').forEach((head) => {
           gsap.from(head.children, {
-            opacity: 0, y: -10, duration: 0.8, stagger: 0.1, ease: 'power3.out',
-            scrollTrigger: { trigger: head.closest('.slide'), start: 'top 70%', once: true },
+            opacity: 0, y: -10, duration: 0.6, stagger: 0.06, ease: 'power3.out',
+            scrollTrigger: { trigger: head.closest('.slide'), start: 'top 75%', once: true },
           });
         });
 
@@ -2980,7 +3006,7 @@
               trigger: '#main',
               start: 'top top',
               end: 'bottom bottom',
-              scrub: 1.1,
+              scrub: 0.3,
             },
           });
           bgTl
@@ -3028,25 +3054,35 @@
         cards.forEach((card) => {
           const tilt = $('.card-tilt', card);
           const glare = $('.card-glare', card);
-          const rx = gsap.quickTo(tilt, 'rotationX', { duration: 0.6, ease: 'power3' });
-          const ry = gsap.quickTo(tilt, 'rotationY', { duration: 0.6, ease: 'power3' });
-          const gx = gsap.quickTo(glare, 'xPercent', { duration: 0.6, ease: 'power3' });
-          const gy = gsap.quickTo(glare, 'yPercent', { duration: 0.6, ease: 'power3' });
+          const rx = gsap.quickTo(tilt, 'rotationX', { duration: 0.35, ease: 'power2.out' });
+          const ry = gsap.quickTo(tilt, 'rotationY', { duration: 0.35, ease: 'power2.out' });
+          const gx = gsap.quickTo(glare, 'xPercent', { duration: 0.35, ease: 'power2.out' });
+          const gy = gsap.quickTo(glare, 'yPercent', { duration: 0.35, ease: 'power2.out' });
+          let rect = null;
 
-          const lift = () => { card.classList.add('is-hover'); gsap.to(tilt, { y: -12, scale: 1.035, duration: 0.6, ease: 'expo.out' }); };
-          const drop = () => { card.classList.remove('is-hover'); rx(0); ry(0); gsap.to(tilt, { y: 0, scale: 1, duration: 0.7, ease: 'expo.out' }); };
+          const lift = () => {
+            rect = card.getBoundingClientRect();
+            card.classList.add('is-hover');
+            gsap.to(tilt, { y: -10, scale: 1.03, duration: 0.45, ease: 'expo.out' });
+          };
+          const drop = () => {
+            rect = null;
+            card.classList.remove('is-hover');
+            rx(0); ry(0);
+            gsap.to(tilt, { y: 0, scale: 1, duration: 0.55, ease: 'expo.out' });
+          };
 
           card.addEventListener('pointerenter', lift);
           card.addEventListener('pointerleave', drop);
           card.addEventListener('focus', () => { if (card.matches(':focus-visible')) lift(); });
           card.addEventListener('blur', drop);
           card.addEventListener('pointermove', (e) => {
-            const r = card.getBoundingClientRect();
-            const px = (e.clientX - r.left) / r.width - 0.5;
-            const py = (e.clientY - r.top) / r.height - 0.5;
-            rx(-py * 14); ry(px * 14);
-            gx(px * 50); gy(py * 50);
-          });
+            if (!rect) rect = card.getBoundingClientRect();
+            const px = (e.clientX - rect.left) / rect.width - 0.5;
+            const py = (e.clientY - rect.top) / rect.height - 0.5;
+            rx(-py * 12); ry(px * 12);
+            gx(px * 40); gy(py * 40);
+          }, { passive: true });
         });
       }
 
@@ -3055,23 +3091,31 @@
          ============================================================== */
       $$('.card-row, .social-row').forEach((row) => {
         let down = false, moved = false, startX = 0, startLeft = 0;
-        row.addEventListener('pointerdown', (e) => {
-          if (e.pointerType !== 'mouse' || row.scrollWidth <= row.clientWidth) return;
-          down = true; moved = false; startX = e.clientX; startLeft = row.scrollLeft;
-        });
-        window.addEventListener('pointermove', (e) => {
+
+        const onPointerMove = (e) => {
           if (!down) return;
           const dx = e.clientX - startX;
           if (Math.abs(dx) > 5) {
             if (!moved) { moved = true; row.classList.add('is-dragging'); }
             row.scrollLeft = startLeft - dx;
           }
-        });
-        window.addEventListener('pointerup', () => {
+        };
+
+        const onPointerUp = () => {
           if (!down) return;
           down = false;
           row.classList.remove('is-dragging');
+          window.removeEventListener('pointermove', onPointerMove);
+          window.removeEventListener('pointerup', onPointerUp);
+        };
+
+        row.addEventListener('pointerdown', (e) => {
+          if (e.pointerType !== 'mouse' || row.scrollWidth <= row.clientWidth) return;
+          down = true; moved = false; startX = e.clientX; startLeft = row.scrollLeft;
+          window.addEventListener('pointermove', onPointerMove, { passive: true });
+          window.addEventListener('pointerup', onPointerUp);
         });
+
         row.addEventListener('click', (e) => {
           if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; }
         }, true);
@@ -3217,25 +3261,28 @@
       if (MOTION && finePointer) {
         $$('[data-magnetic]').forEach((el) => {
           const strength = parseFloat(el.dataset.magnetic) || 0.35;
-          const xTo = gsap.quickTo(el, 'x', { duration: 0.6, ease: 'power3' });
-          const yTo = gsap.quickTo(el, 'y', { duration: 0.6, ease: 'power3' });
+          const xTo = gsap.quickTo(el, 'x', { duration: 0.35, ease: 'power2.out' });
+          const yTo = gsap.quickTo(el, 'y', { duration: 0.35, ease: 'power2.out' });
+          let mRect = null;
+          el.addEventListener('pointerenter', () => { mRect = el.getBoundingClientRect(); });
           el.addEventListener('pointermove', (e) => {
-            const r = el.getBoundingClientRect();
-            xTo((e.clientX - (r.left + r.width / 2)) * strength);
-            yTo((e.clientY - (r.top + r.height / 2)) * strength);
-          });
+            if (!mRect) mRect = el.getBoundingClientRect();
+            xTo((e.clientX - (mRect.left + mRect.width / 2)) * strength);
+            yTo((e.clientY - (mRect.top + mRect.height / 2)) * strength);
+          }, { passive: true });
           el.addEventListener('pointerleave', () => {
-            gsap.to(el, { x: 0, y: 0, duration: 1, ease: 'elastic.out(1, 0.4)' });
+            mRect = null;
+            gsap.to(el, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1, 0.4)' });
           });
         });
 
         document.documentElement.classList.add('has-cursor');
         const dot = $('.cursor-dot'), ring = $('.cursor-ring');
         gsap.set([dot, ring], { xPercent: -50, yPercent: -50 });
-        const dX = gsap.quickTo(dot, 'x', { duration: 0.08 });
-        const dY = gsap.quickTo(dot, 'y', { duration: 0.08 });
-        const rX = gsap.quickTo(ring, 'x', { duration: 0.35, ease: 'power3' });
-        const rY = gsap.quickTo(ring, 'y', { duration: 0.35, ease: 'power3' });
+        const dX = gsap.quickTo(dot, 'x', { duration: 0.02 });
+        const dY = gsap.quickTo(dot, 'y', { duration: 0.02 });
+        const rX = gsap.quickTo(ring, 'x', { duration: 0.14, ease: 'power2.out' });
+        const rY = gsap.quickTo(ring, 'y', { duration: 0.14, ease: 'power2.out' });
 
         window.addEventListener('pointermove', (e) => {
           if (e.pointerType !== 'mouse') return;
